@@ -7,15 +7,15 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <groupId>org.cgarza.exp</groupId>
-    <artifactId>dexcom-asm</artifactId>
-    <name>DexCom Assembly</name>
+    <artifactId>dexcom-gui</artifactId>
+    <name>DexCom GUI</name>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.cgarza.exp</groupId>
-            <artifactId>dexcom-gui</artifactId>
+            <artifactId>dexcom-reader</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
@@ -50,7 +50,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.cgarza.exp.dexcom.gui.DexcomFrame</mainClass>
+                                <mainClass>MainTest</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

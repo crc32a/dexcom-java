@@ -8,6 +8,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>dexcom-reader</module>
+        <module>dexcom-gui</module>
         <module>dexcom-asm</module>
     </modules>
     <build>

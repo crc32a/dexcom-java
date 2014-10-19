@@ -10,6 +10,7 @@ import javax.usb.UsbDeviceDescriptor;
 import javax.usb.UsbDisconnectedException;
 import javax.usb.UsbException;
 import javax.usb.UsbHub;
+import org.cgarza.exp.utils.HexCoder;
 
 public class UsbDeviceHub {
 
@@ -24,10 +25,11 @@ public class UsbDeviceHub {
     @Override
     public String toString() {
         UsbDeviceDescriptor desc = usbDevice.getUsbDeviceDescriptor();
-        String vendorId = StaticUtils.toHex(desc.idVendor());
-        String productId = StaticUtils.toHex(desc.idProduct());
+        String vendorId = HexCoder.toHex(desc.idVendor());
+        String productId = HexCoder.toHex(desc.idProduct());
         String manufactoringId = "UNKNOWN";
         String productString = "UNKNOWN";
+        String serialNumber = "UNknOWN";
         try {
             manufactoringId = usbDevice.getManufacturerString();
         } catch (UsbException ex) {
@@ -41,10 +43,17 @@ public class UsbDeviceHub {
         } catch (UnsupportedEncodingException ex) {
         } catch (UsbDisconnectedException ex) {
         }
+        try {
+            serialNumber = usbDevice.getSerialNumberString();
+        } catch (UsbException ex) {
+        } catch (UnsupportedEncodingException ex) {
+        } catch (UsbDisconnectedException ex) {
+        }
         boolean isHub = usbDevice.isUsbHub();
         return "{ vendorId=" + vendorId + ", productId=" + productId
                 + ", manufacture=" + manufactoringId + ", product="
-                + productString + ", isHub=" + isHub + "}";
+                + productString + ", isHub=" + isHub +", serialNumber="
+                + serialNumber + "}";
     }
 
     public static List<UsbDeviceHub> listDevicesRecursively(UsbHub root) {
