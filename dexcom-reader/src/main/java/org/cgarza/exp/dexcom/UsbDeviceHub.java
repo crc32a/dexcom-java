@@ -56,24 +56,7 @@ public class UsbDeviceHub {
                 + serialNumber + "}";
     }
 
-    public static List<UsbDeviceHub> listDevicesRecursively(UsbHub root) {
-        int i;
-        int nDevices;
-        UsbDevice currdev;
-        UsbHub currHub;
-        List<UsbDevice> devs;
-        List<UsbDeviceHub> devList = new ArrayList<UsbDeviceHub>();
-        devs = root.getAttachedUsbDevices();
-        nDevices = devs.size();
-        for (i = 0; i < nDevices; i++) {
-            currdev = devs.get(i);
-            devList.add(new UsbDeviceHub(root, currdev));
-            if (currdev.isUsbHub()) {
-                devList.addAll(listDevicesRecursively((UsbHub) currdev));
-            }
-        }
-        return devList;
-    }
+
 
     public UsbHub getHub() {
         return hub;

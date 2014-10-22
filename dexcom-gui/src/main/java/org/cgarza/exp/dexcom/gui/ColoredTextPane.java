@@ -8,9 +8,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import org.cgarza.exp.dexcom.PrintfInterface;
 import org.cgarza.exp.utils.Debug;
 
-public class ColoredTextPane {
+public class ColoredTextPane implements PrintfInterface {
+
     private JTextPane textPane;
     private StyledDocument doc;
     private Style red;
@@ -69,5 +71,10 @@ public class ColoredTextPane {
 
     public void clear() {
         textPane.setText("");
+    }
+
+    @Override
+    public void printf(String fmt, Object... args) {
+        greenWrite(fmt, args);
     }
 }

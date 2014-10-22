@@ -86,7 +86,7 @@ public class Crc16 {
         int crc;
         short chShort;
         for (i = start; i < stop; i++) {
-            num = ((num << 8) & 0xff00) ^ crc16Table[((num >> 8) & 0xff) ^ (short) BitConverters.ubyte2int(bytes[i])];
+            num = ((num << 8) & 0xff00) ^ crc16Table[((num >> 8) & 0xff) ^ (short) BitPacker.ubyte2int(bytes[i])];
         }
         crc = (num & 0xffff);
         return crc;

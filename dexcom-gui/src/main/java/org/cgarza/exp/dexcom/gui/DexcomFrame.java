@@ -8,11 +8,14 @@ import java.util.logging.Logger;
 import javax.usb.UsbClaimException;
 import javax.usb.UsbConfiguration;
 import javax.usb.UsbDisconnectedException;
+import javax.usb.UsbEndpoint;
 import javax.usb.UsbException;
 import javax.usb.UsbInterface;
 import javax.usb.UsbNotActiveException;
+import org.cgarza.exp.dexcom.DexComConnection;
 import org.cgarza.exp.dexcom.UsbDeviceHub;
 import org.cgarza.exp.dexcom.UsbUtils;
+import org.cgarza.exp.dexcom.exceptions.DexComException;
 import org.cgarza.exp.dexcom.exceptions.DexComNotFoundException;
 import org.cgarza.exp.utils.ByteWaster;
 import org.cgarza.exp.utils.Debug;
@@ -28,6 +31,7 @@ public class DexcomFrame extends javax.swing.JFrame {
         fdx = new ColoredTextPane(findDexcomPaneRaw);
         dbg = new ColoredTextPane(debugPaneRaw);
         wastedBytes = new ArrayList<ByteWaster>();
+        dexcom = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -252,20 +256,30 @@ public class DexcomFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void findDexComButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findDexComButtonActionPerformed
-        fdx.greenWrite("\n");
-        fdx.greenWrite("Searching for dexcom\n");
         try {
-            dexcom = UsbUtils.findDexCom();
+            fdx.greenWrite("\n");
+            fdx.greenWrite("Searching for dexcom\n");
+            try {
+                List<UsbDeviceHub> devices = UsbUtils.listDevicesRecursively(UsbUtils.getRootHub());
+                int nDevices = devices.size();
+                for (int i = 0; i < nDevices; i++) {
+                    fdx.greenWrite("usbDevice[%2d]=\"%s\"\n", i, devices.get(i).toString());
+                }
+            } catch (DexComNotFoundException ex) {
+                fdx.redWrite("Error unable to find Dexcom\n");
+                dbg.redWrite("Error unable to find Dexcom\n");
+                dbg.writeException(ex);
+                dexcom = null;
+                usbDeviceTextField.setText("");
+                return;
+            }
+            UsbDeviceHub dexDev = UsbUtils.findDexCom();
+            dexcom = new DexComConnection(dexDev, fdx);
+            fdx.greenWrite("Dexcom found\n%s\n", dexcom.toString());
+            usbDeviceTextField.setText(dexcom.toString());
         } catch (DexComNotFoundException ex) {
-            fdx.redWrite("Error unable to find Dexcom\n");
-            dbg.redWrite("Error unable to find Dexcom\n");
             dbg.writeException(ex);
-            dexcom = null;
-            usbDeviceTextField.setText("");
-            return;
         }
-        fdx.greenWrite("Dexcom found\n%s\n", dexcom.toString());
-        usbDeviceTextField.setText(dexcom.toString());
     }//GEN-LAST:event_findDexComButtonActionPerformed
 
     private void usbDeviceTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usbDeviceTextFieldActionPerformed
@@ -321,56 +335,18 @@ public class DexcomFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_freeWastedBytesButtonActionPerformed
 
     private void claimDexcomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_claimDexcomButtonActionPerformed
-        fdx.greenWrite("Attempting to fetch dexcom interface\n");
-        if (dexcom == null) {
-            dbg.redWrite("dexcom device not found. Can't claim interface\n");
-            fdx.redWrite("dexcom device not found. Can't claim interface\n");
-            return;
-        }
-
         try {
-            dexConfig = dexcom.getUsbDevice().getActiveUsbConfiguration();
-            dexIface = dexConfig.getUsbInterface((byte) 1);
-            if(dexIface.isClaimed()){
-                fdx.greenWrite("dexcom interface already claimed\n");
-            }else{
-                fdx.greenWrite("Attempting to claim dexcom interface\n");
-            }
-            dexIface.claim();
-            fdx.greenWrite("got interface %s\n", dexIface.getInterfaceString());
-        } catch (UsbException ex) {
+            dexcom.claimInterfacesAndSetEndpointsWithPipes();
+        } catch (DexComException ex) {
             dbg.writeException(ex);
-            fdx.writeException(ex);
-        } catch (UnsupportedEncodingException ex) {
-            dbg.writeException(ex);
-            fdx.writeException(ex);
-        } catch (UsbDisconnectedException ex) {
-            dbg.writeException(ex);
-            fdx.writeException(ex);
         }
     }//GEN-LAST:event_claimDexcomButtonActionPerformed
 
     private void ReleaseDexcomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReleaseDexcomActionPerformed
-        fdx.greenWrite("Attempting to release dexcom interface\n");
-        if (dexIface == null) {
-            fdx.greenWrite("No dexcom interface claimed\n");
-            return;
-        }
         try {
-            dexIface.release();
-            fdx.greenWrite("Interface released\n");
-        } catch (UsbClaimException ex) {
+            dexcom.releaseInterfaces();
+        } catch (DexComException ex) {
             dbg.writeException(ex);
-            fdx.writeException(ex);
-        } catch (UsbException ex) {
-            dbg.writeException(ex);
-            fdx.writeException(ex);
-        } catch (UsbNotActiveException ex) {
-            dbg.writeException(ex);
-            fdx.writeException(ex);
-        } catch (UsbDisconnectedException ex) {
-            dbg.writeException(ex);
-            fdx.writeException(ex);
         }
     }//GEN-LAST:event_ReleaseDexcomActionPerformed
 
@@ -407,8 +383,6 @@ public class DexcomFrame extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private ColoredTextPane fdx;
     private ColoredTextPane dbg;
-    private UsbDeviceHub dexcom = null;
     private List<ByteWaster> wastedBytes;
-    UsbConfiguration dexConfig;
-    UsbInterface dexIface;
+    private DexComConnection dexcom;
 }
