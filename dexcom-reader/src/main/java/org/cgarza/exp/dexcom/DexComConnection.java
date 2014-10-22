@@ -37,6 +37,9 @@ public class DexComConnection {
     public void releaseInterfaces() throws DexComException {
         if (controlIface.isClaimed()) {
             try {
+                if (controlPipe.isOpen()) {
+                    controlPipe.close();
+                }
                 controlIface.release();
                 printfImpl.printf("control Interface released\n");
             } catch (UsbClaimException ex) {
@@ -54,8 +57,12 @@ public class DexComConnection {
 
         if (dataIface.isClaimed()) {
             try {
+                if (dataPipe.isOpen()) {
+                    dataPipe.close();
+                }
                 dataIface.release();
                 printfImpl.printf("data Interface released\n");
+
             } catch (UsbClaimException ex) {
                 throw new DexComException(ex);
             } catch (UsbException ex) {
@@ -75,7 +82,10 @@ public class DexComConnection {
             try {
                 controlIface.claim(new DetachKernelDriverUsbPolicy());
                 printfImpl.printf("found %d endpoints on controlInterface\n", controlIface.getUsbEndpoints().size());
-                controlEndpoint = controlIface.getUsbEndpoint((byte) 0);
+                controlEndpoint = (UsbEndpoint) controlIface.getUsbEndpoints().get(0);
+                printfImpl.printf("controlEndpoint direction: %d\n", controlEndpoint.getDirection());
+                controlPipe = controlEndpoint.getUsbPipe();
+                printfImpl.printf("controlPipe = %s\n", controlPipe.toString());
             } catch (UsbClaimException ex) {
                 throw new DexComException(ex);
             } catch (UsbException ex) {
@@ -92,7 +102,10 @@ public class DexComConnection {
             try {
                 dataIface.claim(new DetachKernelDriverUsbPolicy());
                 printfImpl.printf("found %d endpoints on data Interface\n", controlIface.getUsbEndpoints().size());
-                dataEndpoint = dataIface.getUsbEndpoint((byte) 1);
+                dataEndpoint = (UsbEndpoint) dataIface.getUsbEndpoints().get(0);
+                printfImpl.printf("dateEndpoint direction: %d\n", dataEndpoint.getDirection());
+                dataPipe = dataEndpoint.getUsbPipe();
+                printfImpl.printf("dataPipe = %s\n", dataPipe.toString());
             } catch (UsbClaimException ex) {
                 throw new DexComException(ex);
             } catch (UsbException ex) {
