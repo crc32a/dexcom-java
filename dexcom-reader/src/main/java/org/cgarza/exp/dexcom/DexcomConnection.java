@@ -14,7 +14,7 @@ import javax.usb.UsbPipe;
 import org.cgarza.exp.dexcom.exceptions.DexComException;
 import org.cgarza.exp.utils.DetachKernelDriverUsbPolicy;
 
-public class DexComConnection {
+public class DexcomConnection {
 
     private UsbDeviceHub device;
     private UsbConfiguration config;
@@ -26,7 +26,7 @@ public class DexComConnection {
     private UsbPipe dataPipe;
     private PrintfInterface printfImpl;
 
-    public DexComConnection(UsbDeviceHub dev, PrintfInterface printfImpl) {
+    public DexcomConnection(UsbDeviceHub dev, PrintfInterface printfImpl) {
         this.device = dev;
         config = dev.getUsbDevice().getActiveUsbConfiguration();
         controlIface = config.getUsbInterface((byte) 0);

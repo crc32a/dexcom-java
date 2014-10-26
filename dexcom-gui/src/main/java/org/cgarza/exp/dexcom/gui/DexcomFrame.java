@@ -12,12 +12,11 @@ import javax.usb.UsbEndpoint;
 import javax.usb.UsbException;
 import javax.usb.UsbInterface;
 import javax.usb.UsbNotActiveException;
-import org.cgarza.exp.dexcom.DexComConnection;
+import org.cgarza.exp.dexcom.DexcomConnection;
 import org.cgarza.exp.dexcom.UsbDeviceHub;
-import org.cgarza.exp.dexcom.UsbUtils;
+import org.cgarza.exp.utils.StaticUsbUtils;
 import org.cgarza.exp.dexcom.exceptions.DexComException;
 import org.cgarza.exp.dexcom.exceptions.DexComNotFoundException;
-import org.cgarza.exp.utils.ByteWaster;
 import org.cgarza.exp.utils.Debug;
 
 public class DexcomFrame extends javax.swing.JFrame {
@@ -30,7 +29,6 @@ public class DexcomFrame extends javax.swing.JFrame {
     private void userInit() {
         fdx = new ColoredTextPane(findDexcomPaneRaw);
         dbg = new ColoredTextPane(debugPaneRaw);
-        wastedBytes = new ArrayList<ByteWaster>();
         dexcom = null;
     }
 
@@ -55,9 +53,6 @@ public class DexcomFrame extends javax.swing.JFrame {
         clearDebugButton = new javax.swing.JButton();
         gcButton = new javax.swing.JButton();
         showMemButton = new javax.swing.JButton();
-        wasteBytesButton = new javax.swing.JButton();
-        wasteBytesTextField = new javax.swing.JTextField();
-        freeWastedBytesButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -173,22 +168,6 @@ public class DexcomFrame extends javax.swing.JFrame {
             }
         });
 
-        wasteBytesButton.setText("Waste Bytes");
-        wasteBytesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                wasteBytesButtonActionPerformed(evt);
-            }
-        });
-
-        wasteBytesTextField.setText("0");
-
-        freeWastedBytesButton.setText("Free Wasted Bytes");
-        freeWastedBytesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                freeWastedBytesButtonActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout DebugTabLayout = new javax.swing.GroupLayout(DebugTab);
         DebugTab.setLayout(DebugTabLayout);
         DebugTabLayout.setHorizontalGroup(
@@ -196,21 +175,13 @@ public class DexcomFrame extends javax.swing.JFrame {
             .addGroup(DebugTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(DebugTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(DebugTabLayout.createSequentialGroup()
-                        .addGroup(DebugTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1222, Short.MAX_VALUE)
-                            .addGroup(DebugTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(showMemButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(gcButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(clearDebugButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(freeWastedBytesButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .addGroup(DebugTabLayout.createSequentialGroup()
-                        .addComponent(wasteBytesButton, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(wasteBytesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(829, 829, 829))))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1222, Short.MAX_VALUE)
+                    .addGroup(DebugTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(showMemButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(gcButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(clearDebugButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         DebugTabLayout.setVerticalGroup(
             DebugTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -225,13 +196,7 @@ public class DexcomFrame extends javax.swing.JFrame {
                 .addComponent(gcButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showMemButton)
-                .addGap(4, 4, 4)
-                .addComponent(freeWastedBytesButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(DebugTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(wasteBytesButton)
-                    .addComponent(wasteBytesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(114, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Debug", DebugTab);
@@ -260,7 +225,7 @@ public class DexcomFrame extends javax.swing.JFrame {
             fdx.greenWrite("\n");
             fdx.greenWrite("Searching for dexcom\n");
             try {
-                List<UsbDeviceHub> devices = UsbUtils.listDevicesRecursively(UsbUtils.getRootHub());
+                List<UsbDeviceHub> devices = StaticUsbUtils.listDevicesRecursively(StaticUsbUtils.getRootHub());
                 int nDevices = devices.size();
                 for (int i = 0; i < nDevices; i++) {
                     fdx.greenWrite("usbDevice[%2d]=\"%s\"\n", i, devices.get(i).toString());
@@ -273,8 +238,8 @@ public class DexcomFrame extends javax.swing.JFrame {
                 usbDeviceTextField.setText("");
                 return;
             }
-            UsbDeviceHub dexDev = UsbUtils.findDexCom();
-            dexcom = new DexComConnection(dexDev, fdx);
+            UsbDeviceHub dexDev = StaticUsbUtils.findDexCom();
+            dexcom = new DexcomConnection(dexDev, fdx);
             fdx.greenWrite("Dexcom found\n%s\n", dexcom.toString());
             usbDeviceTextField.setText(dexcom.toString());
         } catch (DexComNotFoundException ex) {
@@ -295,24 +260,7 @@ public class DexcomFrame extends javax.swing.JFrame {
         int i;
         String memory = Debug.showMem();
         dbg.greenWrite(memory);
-        nEntries = wastedBytes.size();
-        for (i = 0; i < nEntries; i++) {
-            wbSize += wastedBytes.get(i).size();
-        }
-        dbg.greenWrite("wasted Bytes is %d\n", wbSize);
     }//GEN-LAST:event_showMemButtonActionPerformed
-
-    private void wasteBytesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wasteBytesButtonActionPerformed
-        int nBytes = 0;
-        try {
-            nBytes = Integer.parseInt(wasteBytesTextField.getText());
-        } catch (NumberFormatException ex) {
-            dbg.redWrite("Error converting %s to integer\n", wasteBytesTextField.getText());
-            dbg.writeException(ex);
-        }
-        dbg.greenWrite("Wasted another %d bytes\n", nBytes);
-        wastedBytes.add(new ByteWaster(nBytes));
-    }//GEN-LAST:event_wasteBytesButtonActionPerformed
 
     private void clearDebugButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearDebugButtonActionPerformed
         dbg.clear();
@@ -322,17 +270,6 @@ public class DexcomFrame extends javax.swing.JFrame {
         dbg.greenWrite("Invoking garbage collector\n");
         Debug.gc();
     }//GEN-LAST:event_gcButtonActionPerformed
-
-    private void freeWastedBytesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_freeWastedBytesButtonActionPerformed
-        long wbSize = 0;
-        int i;
-        int nEntries = wastedBytes.size();
-        for (i = 0; i < nEntries; i++) {
-            wbSize += wastedBytes.get(i).size();
-        }
-        dbg.greenWrite("Freeing %d bytes\n", wbSize);
-        wastedBytes = new ArrayList<ByteWaster>();
-    }//GEN-LAST:event_freeWastedBytesButtonActionPerformed
 
     private void claimDexcomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_claimDexcomButtonActionPerformed
         try {
@@ -368,7 +305,6 @@ public class DexcomFrame extends javax.swing.JFrame {
     private javax.swing.JTextPane debugPaneRaw;
     private javax.swing.JButton findDexComButton;
     private javax.swing.JTextPane findDexcomPaneRaw;
-    private javax.swing.JButton freeWastedBytesButton;
     private javax.swing.JButton gcButton;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -378,11 +314,8 @@ public class DexcomFrame extends javax.swing.JFrame {
     private javax.swing.JButton showMemButton;
     private javax.swing.JTextField usbDeviceTextField;
     private javax.swing.JPanel usbTab;
-    private javax.swing.JButton wasteBytesButton;
-    private javax.swing.JTextField wasteBytesTextField;
     // End of variables declaration//GEN-END:variables
     private ColoredTextPane fdx;
     private ColoredTextPane dbg;
-    private List<ByteWaster> wastedBytes;
-    private DexComConnection dexcom;
+    private DexcomConnection dexcom;
 }

@@ -1,4 +1,4 @@
-package org.cgarza.exp.dexcom;
+package org.cgarza.exp.utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +12,11 @@ import javax.usb.UsbHostManager;
 import javax.usb.UsbHub;
 import javax.usb.UsbInterface;
 import javax.usb.UsbServices;
+import org.cgarza.exp.dexcom.Constants;
+import org.cgarza.exp.dexcom.UsbDeviceHub;
 import org.cgarza.exp.dexcom.exceptions.DexComNotFoundException;
 
-public class UsbUtils {
+public class StaticUsbUtils {
 
     private static String ROOT_HUB_ERROR = "Error getting root USB hub";
 

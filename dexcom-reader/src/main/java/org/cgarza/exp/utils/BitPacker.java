@@ -1,5 +1,7 @@
 package org.cgarza.exp.utils;
 
+import java.nio.ByteBuffer;
+
 public class BitPacker {
 
     public static int ubyte2int(byte in) {
@@ -13,5 +15,15 @@ public class BitPacker {
 
     public static int ushortLE2Int(byte[] data, int idx) {
         return ubyte2int(data[idx]) + ubyte2int(data[idx + 1]) << 8;
+    }
+
+    public static long uintLE2long(byte[] data, int idx) {
+        return ubyte2int(data[idx]) + ubyte2int(data[idx + 1]) << 8
+                + ubyte2int(data[idx + 2]) << 16 + ubyte2int(data[idx + 3]) << 24;
+    }
+
+    public static int intLE2int(byte[] data, int idx) {
+        return ubyte2int(data[idx + 3]) << 24 | ubyte2int(data[idx + 2]) << 16
+                | ubyte2int(data[idx + 1]) << 8 | ubyte2int(data[idx]);
     }
 }
